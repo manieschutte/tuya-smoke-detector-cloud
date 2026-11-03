@@ -1,6 +1,6 @@
 # Tuya Smoke Detector Cloud
 
-A HACS custom integration for reading two Tuya Wi-Fi smoke detectors through Tuya IoT Cloud. It is a separate integration and does not replace or modify Home Assistant's built-in Tuya or Xtend Tuya integrations.
+A HACS custom integration that reads Tuya Wi-Fi smoke detectors through the Tuya IoT Cloud **Query Properties** API. It is a separate integration, not an extension of Xtend Tuya and not a replacement for the built-in Tuya integration.
 
 ## Confirmed devices
 
@@ -9,48 +9,42 @@ A HACS custom integration for reading two Tuya Wi-Fi smoke detectors through Tuy
 | Kitchen | `bfd594ab265a617489nqsn` |
 | Factory | `bf6b8165e386e79696stm` |
 
-## Exposed properties
+## Entities
 
-| Property | DP | Home Assistant entity |
+The integration reads the seven confirmed cloud properties:
+
+| Property | DP | Entity behavior |
 |---|---:|---|
-| `smoke_sensor_state` | 1 | Raw value sensor and smoke alarm binary sensor |
-| `battery_percentage` | 15 | Battery percentage |
-| `muffling` | 16 | Raw value sensor (read only) |
-| `temp_current` | 23 | Temperature in °C (raw value divided by 10) |
-| `humidity_value` | 24 | Humidity in percent (raw value preserved) |
-| `temp_alarm` | 101 | Raw value sensor and heat alarm binary sensor |
-| `self_test` | 102 | Raw value sensor |
+| `smoke_sensor_state` | 1 | Smoke sensor status, raw enum (for example `normal`) |
+| `battery_percentage` | 15 | Battery percent |
+| `muffling` | 16 | Muffling value |
+| `temp_current` | 23 | Temperature °C; raw value divided by 10 |
+| `humidity_value` | 24 | Humidity percent; raw value retained |
+| `temp_alarm` | 101 | Temperature alarm enum; `cancel` is displayed as `None` |
+| `self_test` | 102 | Self-test On/Off |
 
-Every property sensor includes its Tuya DP and raw response value as attributes. The alarm binary sensors map common truthy values (`true`, `1`, `on`, `alarm`, `smoke`, `high`) to active. Since the device's enum mapping has not been confirmed, use the raw sensor values to verify alarm semantics before using the binary sensors in safety automations.
+The primary entities match the five shown in the provided Xtend Tuya screenshot: Humidity, Self test, Smoke sensor status, Temperature, and Temperature alarm. Battery and Muffling are additional confirmed properties. This integration reads the same cloud property values; it does not attach entities to Xtend Tuya's device.
 
 ## Tuya project setup
 
-Create a Tuya IoT Cloud Development project, link the Smart Life/Tuya app account containing the detectors, enable the relevant device status/query API permissions, and select the **Central Europe Data Center**. You will need the project's Access ID (Client ID) and Access Secret (Client Secret).
+Use the existing Tuya IoT Cloud Development project linked to the Smart Life/Tuya account containing the detectors. Ensure the project uses the **Central Europe Data Center** and is authorized for Query Properties (`GET /v2.0/cloud/thing/{device_id}/shadow/properties`). The integration uses `https://openapi.tuyaeu.com`.
 
-The integration asks for those credentials in Home Assistant's setup form and stores them in its config entry. No credentials are included in these files. The API endpoint is `https://openapi.tuyaeu.com`; access tokens are acquired and refreshed by the integration.
+Enter the project's Access ID and Access Secret in Home Assistant's setup form. Credentials are stored in the config entry and are not included in the source files.
 
 ## HACS installation
 
-This folder is laid out as the root of a HACS custom integration repository. To install it through HACS, publish the contents of this folder in a GitHub repository, then:
-
 1. In HACS, open **Integrations** → menu → **Custom repositories**.
-2. Add the repository URL and select **Integration**.
+2. Add `https://github.com/manieschutte/tuya-smoke-detector-cloud` as type **Integration**.
 3. Download **Tuya Smoke Detector Cloud** and restart Home Assistant.
-4. Go to **Settings → Devices & services → Add integration** and choose **Tuya Smoke Detector Cloud**.
-5. Enter the Client ID, Client Secret, and one device ID. Add the second device as another integration entry with the same project credentials.
+4. Go to **Settings → Devices & services → Add integration** and select **Tuya Smoke Detector Cloud**.
+5. Add each detector as a separate entry using the same project credentials and its device ID.
 
-For manual installation, copy `custom_components/tuya_smoke_detector_cloud` into your Home Assistant configuration directory's `custom_components` folder, restart, and add the integration in the UI.
+For manual installation, copy `custom_components/tuya_smoke_detector_cloud` into the Home Assistant configuration directory's `custom_components` folder, restart, and add the integration in the UI.
 
-## Polling and scope
+## Polling
 
-The integration queries the Tuya device status endpoint once per minute. It is read-only: `muffling` is exposed as a sensor because the confirmed details establish property reads, not a supported write command. Existing Tuya integrations remain untouched.
-
-## Troubleshooting
-
-- **Cannot connect:** check Client ID/Secret, Central Europe region, app-account linkage, API permissions, and device ID.
-- **No properties returned:** verify the cloud project is authorized to query status for the linked device.
-- **Alarm meaning is unexpected:** inspect the raw state value. Device enum mappings may differ; the binary entities use only a conservative common-value mapping.
+The integration polls Query Properties once per minute. It is read-only. It does not send control commands or change existing Tuya/Xtend Tuya integrations.
 
 ## Release status
 
-Initial package version `0.1.0`. It has not yet been authenticated against the user's live Tuya project or devices. A public repository URL must be created before HACS can add this as a custom repository.
+Version `0.2.0` corrects the API endpoint and response parsing to use the Tuya Query Properties result shape. It has not yet been authenticated against the user's live Home Assistant install. Compare the values using the same detector ID; the supplied Xtend screenshot and API response may refer to different detectors.
