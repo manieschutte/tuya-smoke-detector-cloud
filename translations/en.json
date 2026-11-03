@@ -1,0 +1,22 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Connect a smoke detector",
+        "description": "Enter your Tuya IoT Cloud project credentials and the device ID.",
+        "data": {
+          "client_id": "Access ID (Client ID)",
+          "client_secret": "Access Secret (Client Secret)",
+          "device_id": "Tuya device ID",
+          "device_name": "Device name (optional)"
+        }
+      }
+    },
+    "error": {
+      "cannot_connect": "Could not connect to Tuya Cloud or query this device. Check credentials, region, permissions, and device ID."
+    },
+    "abort": {
+      "already_configured": "This device is already configured."
+    }
+  }
+}
