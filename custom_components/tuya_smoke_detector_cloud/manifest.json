@@ -1,0 +1,10 @@
+{
+  "domain": "tuya_smoke_detector_cloud",
+  "name": "Tuya Smoke Detector Cloud",
+  "codeowners": [],
+  "config_flow": true,
+  "documentation": "https://developer.tuya.com/en/docs/iot/api-request?id=Ka4a8uuo1j4t4",
+  "iot_class": "cloud_polling",
+  "requirements": [],
+  "version": "0.1.0"
+}
